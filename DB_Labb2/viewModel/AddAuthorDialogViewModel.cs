@@ -1,18 +1,21 @@
-﻿using DB_Labb2.Command;
-using DB_Labb2.Model;
+﻿using Bookstore.Service;
+using Bookstore.Service.Interfaces;
+using Shared.Command;
+using Shared.Model;
+using Shared.Statics;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 
-namespace DB_Labb2.viewModel;
+namespace Bookstore.viewModel;
 
 public class AddAuthorDialogViewModel : ModelBase, ICloseWindows
 {
 
-    private AuthorManager _authorManager;
-    public AddAuthorDialogViewModel(AuthorManager authorManager)
+    private IAuthorService _authorService;
+    public AddAuthorDialogViewModel(IAuthorService authorService)
     {
-        _authorManager = authorManager;
+        _authorService = authorService;
         AddAuthorCommand = new DelegateCommand(OnAddAuthor);
         CancelButtonCommand = new DelegateCommand(OnCancelClick);
     }
@@ -69,7 +72,7 @@ public class AddAuthorDialogViewModel : ModelBase, ICloseWindows
         {
             _month = value;
             RaisePropertyChanged();
-            UpdateDaysInMonth();
+            DayComboBoxItemsSource = StaticMethods.UpdateDaysInMonth(_year, _month);
             RaisePropertyChanged();
             RaisePropertyChanged("DayComboBoxItemsSource");
         }
@@ -98,32 +101,6 @@ public class AddAuthorDialogViewModel : ModelBase, ICloseWindows
     }
 
 
-    private void UpdateDaysInMonth()
-    {
-        if (Month is Months selectedMonth)
-        {
-            int daysInMonth = GetDaysInMonth(selectedMonth, Year);
-            var localList = Enumerable.Range(1, daysInMonth).ToList();
-            DayComboBoxItemsSource = new ObservableCollection<int>(localList);
-        }
-    }
-
-    private int GetDaysInMonth(Months month, int year)
-    {
-        switch (month)
-        {
-            case Model.Months.February:
-                return DateTime.IsLeapYear(year) ? 29 : 28;
-            case Model.Months.April:
-            case Model.Months.June:
-            case Model.Months.September:
-            case Model.Months.November:
-                return 30;
-            default:
-                return 31;
-        }
-    }
-
     private void OnAddAuthor(object obj)
     {
         if (string.IsNullOrEmpty(Firstname) || string.IsNullOrEmpty(Lastname) || new [] { Year, (int)Month, Day }.Any(val => val == 0))
@@ -140,7 +117,7 @@ public class AddAuthorDialogViewModel : ModelBase, ICloseWindows
             Birthdate = selectedDate
         };
 
-        _authorManager.AddAuthor(newAuthor);
+        _authorService.AddAuthorAsync(newAuthor);
         Close?.Invoke();
     }
 

@@ -1,5 +1,5 @@
-﻿using DB_Labb2.Model;
-using DB_Labb2.viewModel;
+﻿using Shared.Model;
+using Bookstore.viewModel;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 
 
-namespace DB_Labb2.Dialogs
+namespace Bookstore.Dialogs
 {
     public partial class AddAuthorDialog : Window, INotifyPropertyChanged
     {

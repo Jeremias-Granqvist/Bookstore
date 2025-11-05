@@ -1,18 +1,20 @@
-﻿using DB_Labb2.Command;
-using DB_Labb2.Model;
+﻿using Shared.Command;
+using Shared.Model;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 
-namespace DB_Labb2.viewModel
+using Bookstore.Service.Interfaces;
+
+namespace Bookstore.viewModel
 {
     public class EditBookDialogViewModel : ModelBase, ICloseWindows
     {
-        private BookManager _bookManager;
-        public EditBookDialogViewModel(BookManager bookManager, MainViewModel mainViewModel)
+        private IBookService _bookService;
+        public EditBookDialogViewModel(IBookService bookService, MainViewModel mainViewModel)
         {
-            _bookManager = bookManager;
+            _bookService = bookService;
             Books = mainViewModel.Books;
             Authors = mainViewModel.Authors;
 
@@ -27,35 +29,20 @@ namespace DB_Labb2.viewModel
         public ICommand SaveButtonCommand { get; }
         public ICommand CancelButtonCommand { get; }
 
-        public Book LoadBookForEditing(long isbn)
+        public Book LoadBookForEditing(Book book)
         {
-            if (SelectedBook != null)
-            {
-                using (var context = new BookstoreContext())
-                {
-                    var book = context.Books
-                        .Where(b => b.ISBN13 == isbn)
-                        .Include(b => b.Authors)
-                        .FirstOrDefault();
 
-                    if (book != null)
+                _bookService.EditBookAsync(book);
+
+                    SelectedAuthor.Clear();
+                    foreach (var author in book.Authors)
                     {
-
-                        SelectedAuthor.Clear();
-
-                        foreach (var author in book.Authors)
-                        {
-                            SelectedAuthor.Add(author);
-                        }
-
-                        return book;
+                        SelectedAuthor.Add(author);
                     }
 
-                }
-            }
-            return null;
+                return book;
+            
         }
-
         private ObservableCollection<Book> _books;
         public ObservableCollection<Book> Books
         {
@@ -94,7 +81,7 @@ namespace DB_Labb2.viewModel
                     SelectedMonth = _selectedBook.ReleaseDate.Month;
                     SelectedDay = _selectedBook.ReleaseDate.Day;
                     
-                    _selectedBook = LoadBookForEditing(SelectedBook.ISBN13);
+                    _selectedBook = LoadBookForEditing(SelectedBook);
 
                     _originalISBN = _selectedBook.ISBN13;
                     _originalTitle = _selectedBook.Title;
@@ -308,12 +295,12 @@ namespace DB_Labb2.viewModel
         {
             switch (month)
             {
-                case Model.Months.February:
+                case Months.February:
                     return DateTime.IsLeapYear(year) ? 29 : 28;
-                case Model.Months.April:
-                case Model.Months.June:
-                case Model.Months.September:
-                case Model.Months.November:
+                case Months.April:
+                case Months.June:
+                case Months.September:
+                case Months.November:
                     return 30;
                 default:
                     return 31;
@@ -377,12 +364,12 @@ namespace DB_Labb2.viewModel
         {
             SelectedBook.ReleaseDate = DateOnly.Parse(SelectedYear.ToString() + "-" + SelectedMonth.ToString() + "-" + SelectedDay.ToString());
             SelectedBook.Authors = SelectedAuthor;
-            _bookManager.EditBook(SelectedBook, _originalISBN);
+            _bookService.EditBookAsync(SelectedBook);
         }
         private void DeleteBookFromDB(Book book)
         {
             var bookToRemove = Books.FirstOrDefault(b => b.ISBN13 == book.ISBN13);
-            _bookManager.DeleteBook(bookToRemove.ISBN13);
+            _bookService.DeleteBookAsync(bookToRemove);
         }
         private void OnCancelClick(object obj)
         {

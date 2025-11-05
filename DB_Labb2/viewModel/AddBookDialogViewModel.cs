@@ -1,5 +1,5 @@
-﻿using DB_Labb2.Command;
-using DB_Labb2.Model;
+﻿using Shared.Command;
+using Shared.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,16 +9,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Bookstore.Service.Interfaces;
+using Shared.Statics;
 
-namespace DB_Labb2.viewModel
+namespace Bookstore.viewModel
 {
     public class AddBookDialogViewModel : ModelBase, ICloseWindows
     {
-        private BookManager _bookManager;
-        public AddBookDialogViewModel(BookManager bookmanager, MainViewModel mainViewModel)
+        private IBookService _bookService;
+        public AddBookDialogViewModel(IBookService bookService, MainViewModel mainViewModel)
         {
             Authors = mainViewModel.Authors;
-            _bookManager = bookmanager;
+            _bookService = bookService;
 
             CancelButtonCommand = new DelegateCommand(OnCancelClick);
             AddBookCommand = new DelegateCommand(OnSaveBook);
@@ -102,7 +104,7 @@ namespace DB_Labb2.viewModel
             set
             {
                 _month = value;
-                UpdateDaysInMonth();
+                DayComboBoxItemsSource = StaticMethods.UpdateDaysInMonth(_year, _month);
                 RaisePropertyChanged();
                 RaisePropertyChanged("DayComboBoxItemsSource");
             }
@@ -157,12 +159,12 @@ namespace DB_Labb2.viewModel
         {
             switch (month)
             {
-                case Model.Months.February:
+                case Months.February:
                     return DateTime.IsLeapYear(year) ? 29 : 28;
-                case Model.Months.April:
-                case Model.Months.June:
-                case Model.Months.September:
-                case Model.Months.November:
+                case Months.April:
+                case Months.June:
+                case Months.September:
+                case Months.November:
                     return 30;
                 default:
                     return 31;
@@ -193,7 +195,7 @@ namespace DB_Labb2.viewModel
                 ReleaseDate = selectedDate,
                 Language = Language.ToString()
             };
-            _bookManager.AddBook(newBook);
+            _bookService.AddBookAsync(newBook);
             Close?.Invoke();
         }
 

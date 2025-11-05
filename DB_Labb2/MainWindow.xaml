@@ -1,18 +1,15 @@
-﻿<Window x:Class="DB_Labb2.MainWindow"
+﻿<Window x:Class="Bookstore.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:DB_Labb2"
-        xmlns:convert="clr-namespace:DB_Labb2.Converters"
-        xmlns:viewmodel="clr-namespace:DB_Labb2.viewModel"
+        xmlns:local="clr-namespace:Bookstore"
+        xmlns:convert="clr-namespace:Bookstore.Converters"
+        xmlns:viewmodel="clr-namespace:Bookstore.viewModel"
         mc:Ignorable="d"
         Title="MainWindow"
         Height="450"
         Width="800">
-    <Window.DataContext>
-        <viewmodel:MainViewModel />
-    </Window.DataContext>
     <Window.Resources>
         <convert:AuthorNameConverter x:Key="AuthorNameConverter" />
     </Window.Resources>

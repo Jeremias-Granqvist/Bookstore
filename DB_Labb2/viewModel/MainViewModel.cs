@@ -1,70 +1,81 @@
-﻿using DB_Labb2.Command;
-using DB_Labb2.Dialogs;
-using DB_Labb2.Model;
+﻿using Bookstore.Dialogs;
+using Bookstore.Service;
+using Bookstore.Service.Interfaces;
+using Bookstore;
 using Microsoft.EntityFrameworkCore;
+using Shared.Command;
+using Shared.Model;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Xml;
 
-namespace DB_Labb2.viewModel;
+namespace Bookstore.viewModel;
 
 public class MainViewModel : ModelBase, ICloseWindows
 {
+    private IEventDispatcher _eventDispatcher;
 
-    private AuthorManager _authorManager;
-    private BookManager _bookManager;
-    private InventoryManager _inventoryManager;
-    public MainViewModel()
+    private IAuthorService _authorService;
+    private IBookService _bookService;
+    private IInventoryService _inventoryService;
+    private IStoreService _storeService;
+
+    public MainViewModel(
+        IEventDispatcher eventDispatcher, 
+        IAuthorService authorService, 
+        IBookService bookService, 
+        IInventoryService inventoryService,
+        IStoreService storeService)
     {
-        _authorManager = new AuthorManager();
-        _bookManager = new BookManager();
-        _inventoryManager = new InventoryManager();
+        _authorService = authorService;
+        _eventDispatcher = eventDispatcher;
+        _bookService = bookService;
+        _inventoryService = inventoryService;
+        _storeService = storeService;
 
         _authors = new ObservableCollection<Author>();
         _books = new ObservableCollection<Book>();
 
+        AttachEvents();
+        SetCommands();
+        SetDataGrids();
+    }
 
-        _authorManager.AuthorAdded += AuthorManager_AuthorAdded;
-        _authorManager.AuthorEdited += AuthorManager_AuthorEdited;
-        _authorManager.AuthorDeleted += AuthorManager_AuthorDeleted;
-        _bookManager.BookAdded += BookManager_BookAdded;
-        _bookManager.BookEdited += BookManager_BookEdited;
-        _bookManager.BookDeleted += BookManager_BookDeleted;
-        _inventoryManager.InventoryAdded += InventoryManager_InventoryAdded;
-        _inventoryManager.InventoryEdited += InventoryManager_InventoryEdited;
-        _inventoryManager.InventoryDeleted += InventoryManager_InventoryDeleted;
-        
-        
+    private void SetCommands()
+    {
         PressCancelButtonCommand = new DelegateCommand(OnCancelButtonPress);
-        
         AddAuthorCommand = new DelegateCommand(OnAddAuthorClick);
         AlterAuthorCommand = new DelegateCommand(OnAlterAuthorClick);
-
         AddBookCommand = new DelegateCommand(OnAddBookClick);
         EditBookCommand = new DelegateCommand(OnEditBookClick);
-        
         PressAddToInventoryCommand = new DelegateCommand(OnAddToInventoryClick);
         PressRemoveFromInventoryCommand = new DelegateCommand(OnRemoveFromInventoryClick);
-
         PressBookSearchCommand = new DelegateCommand(OnBookSearchClick);
         PressAuthorSearchCommand = new DelegateCommand(OnAuthorSearchClick);
         PressResetCommand = new DelegateCommand(OnResetFilterClick);
-        SetDataGrids();
+    }
+
+    private void AttachEvents()
+    {
+        _eventDispatcher.EntityAddedEvent += OnEntityAdded;
+        _eventDispatcher.EntityUpdatedEvent += OnEntityEdited;
+        _eventDispatcher.EntityRemovedEvent += OnEntityDeleted;
+        _eventDispatcher.EntityListEvent += OnEntityFetch;
 
     }
 
     //startup settings and commands
-    public ICommand PressResetCommand { get; }
-    public ICommand PressBookSearchCommand { get; }
-    public ICommand PressAuthorSearchCommand { get; }
-    public ICommand PressAddToInventoryCommand { get; }
-    public ICommand PressRemoveFromInventoryCommand { get; }
-    public ICommand PressCancelButtonCommand { get; }
-    public ICommand AddAuthorCommand { get; }
-    public ICommand AlterAuthorCommand { get; }
-    public ICommand AddBookCommand { get; }
-    public ICommand EditBookCommand { get; }
+    public ICommand PressResetCommand { get; set; }
+    public ICommand PressBookSearchCommand { get; set; }
+    public ICommand PressAuthorSearchCommand { get; set; }
+    public ICommand PressAddToInventoryCommand { get; set; }
+    public ICommand PressRemoveFromInventoryCommand { get; set; }
+    public ICommand PressCancelButtonCommand { get; set; }
+    public ICommand AddAuthorCommand { get; set; }
+    public ICommand AlterAuthorCommand { get; set; }
+    public ICommand AddBookCommand { get; set; }
+    public ICommand EditBookCommand { get; set; }
     public Action Close { get; set; }
 
     private ObservableCollection<Inventory> _inventories;
@@ -81,6 +92,7 @@ public class MainViewModel : ModelBase, ICloseWindows
         set
         {
             _authors = value;
+            FilteredAuthors = _authors;
             RaisePropertyChanged();
         }
     }
@@ -106,18 +118,25 @@ public class MainViewModel : ModelBase, ICloseWindows
             RaisePropertyChanged();
         }
     }
-
-    private void SetDataGrids()
+    public async Task LoadDataAsync()
     {
-        using var db = new BookstoreContext();
-        Authors = new ObservableCollection<Author>(db.Authors);
-        Books = new ObservableCollection<Book>(db.Books.Include(b => b.Authors));
-        Inventories = new ObservableCollection<Inventory>(db.Inventory
-            .Include(i => i.book)
-            .Include(i => i.store)
-            .Where(i => i.Amount > 0)
-            .ToList());
-        Stores = new ObservableCollection<Store>(db.Stores);
+        AttachEvents();
+        SetCommands();
+        SetDataGrids();
+    }
+    private async Task SetDataGrids()
+    {
+        var authors = await _authorService.GetAuthorsAsync();
+        Authors = new ObservableCollection<Author>(authors);
+        //FilteredAuthors = Authors;
+        var books = await _bookService.GetBooksAsync();
+        Books = new ObservableCollection<Book>(books);
+        //FilteredBooks = Books;
+        var inventories = await _inventoryService.GetInventoriesAsync();
+        Inventories = new ObservableCollection<Inventory>(inventories);
+
+        var stores = await _storeService.GetStoresAsync();
+        Stores = new ObservableCollection<Store>(stores);
 
         FilteredAuthors = Authors;
         FilteredBooks = Books;
@@ -241,7 +260,7 @@ public class MainViewModel : ModelBase, ICloseWindows
                 {
                     inventory.Amount = inventory.Amount + AddToAmount;
                     RaisePropertyChanged();
-                    _inventoryManager.EditInventory(inventory);
+                    _inventoryService.EditInventoryAsync(inventory);
                 }
             }
         }
@@ -256,7 +275,7 @@ public class MainViewModel : ModelBase, ICloseWindows
                 InventoryISBN13 = SelectedBook.ISBN13 
             };
             RaisePropertyChanged("Inventories");
-        _inventoryManager.AddInventory(newAdditionToInventory);
+        _inventoryService.AddInventoryAsync(newAdditionToInventory);
         }
     }
 
@@ -274,11 +293,11 @@ public class MainViewModel : ModelBase, ICloseWindows
                     if (inventory.Amount < 0)
                     {
                         inventory.Amount = 0;
-                        _inventoryManager.DeleteInventory(inventory);
+                        _inventoryService.DeleteInventoryAsync(inventory);
                     }
                     else
                     {
-                    _inventoryManager.EditInventory(inventory);
+                    _inventoryService.EditInventoryAsync(inventory);
                     }
                     RaisePropertyChanged("Inventories");
                         break;
@@ -296,10 +315,11 @@ public class MainViewModel : ModelBase, ICloseWindows
     }
 
 
-    //menu button clicks
+    //DIALOGBOX OPENING
+    #region Dialogbox Openers
     private void OnAddAuthorClick(object obj)
     {
-        var addAuthorModel = new AddAuthorDialogViewModel(_authorManager);
+        var addAuthorModel = new AddAuthorDialogViewModel(_authorService);
         var addAuthorWindow = new AddAuthorDialog(addAuthorModel)
         {
             DataContext = addAuthorModel
@@ -314,7 +334,7 @@ public class MainViewModel : ModelBase, ICloseWindows
 
     private void OnAlterAuthorClick(object obj)
     {
-        var editAuthorModel = new EditAuthorDialogViewModel(_authorManager, this);
+        var editAuthorModel = new EditAuthorDialogViewModel(_authorService, this);
         var editAuthorWindow = new EditAuthorDialog(editAuthorModel)
         {
             DataContext = editAuthorModel
@@ -329,7 +349,7 @@ public class MainViewModel : ModelBase, ICloseWindows
 
     private void OnAddBookClick(object obj)
     {
-        var addBookModel = new AddBookDialogViewModel(_bookManager, this);
+        var addBookModel = new AddBookDialogViewModel(_bookService, this);
         var addBookWindow = new AddBookDialog(addBookModel)
         {
             DataContext = addBookModel
@@ -343,7 +363,7 @@ public class MainViewModel : ModelBase, ICloseWindows
 
     private void OnEditBookClick(object obj)
     {
-        var editBookModel = new EditBookDialogViewModel(_bookManager, this);
+        var editBookModel = new EditBookDialogViewModel(_bookService, this);
         var editBookWindow = new EditBookDialog(editBookModel)
         {
             DataContext = editBookModel
@@ -354,106 +374,115 @@ public class MainViewModel : ModelBase, ICloseWindows
         }
         editBookWindow.Show();
     }
-
-
-
-
-    //eventhandling and updates
-
-    private void AuthorManager_AuthorAdded(object sender, Author author)
+    #endregion
+    //EVENT HANDLING
+    #region Event Handling
+    private void OnEntityAdded(object? sender, object entity)
     {
-        Authors.Add(author);
-        RaisePropertyChanged("Authors");
-    }
-    private void AuthorManager_AuthorEdited(object? sender, Author author)
-    {
-        var authorInCollection = Authors.FirstOrDefault(a => a.AuthorID == author.AuthorID);
-        if (authorInCollection != null)
+        if (entity is Author author)
         {
-            authorInCollection.Firstname = author.Firstname;
-            authorInCollection.Lastname = author.Lastname;
-            authorInCollection.Birthdate = author.Birthdate;
+            App.Current.Dispatcher.Invoke(() =>
+            Authors.Add(author));
+            RaisePropertyChanged(nameof(Authors));
         }
-        RaisePropertyChanged("Author");
-        RaisePropertyChanged("Authors");
-
-    }
-    private void AuthorManager_AuthorDeleted(object? sender, int authorID)
-    {
-        var authorToDelete = Authors.FirstOrDefault(a => a.AuthorID == authorID);
-        if (authorToDelete != null)
+        else if (entity is Book book)
         {
-            Authors.Remove(authorToDelete);
+            Books.Add(book);
+            RaisePropertyChanged(nameof(Books));
         }
-        RaisePropertyChanged("Authors");
-    }
-
-    private void BookManager_BookAdded(object sender, Book book)
-    {
-        Books.Add(book);
-        RaisePropertyChanged("Books");
-    }
-    private void BookManager_BookEdited(object? sender, Book book)
-    {
-        var bookInCollection = Books.FirstOrDefault(b => b.ISBN13 == book.ISBN13);
-        if (bookInCollection != null)
-        {
-            bookInCollection.ISBN13 = book.ISBN13;
-            bookInCollection.Title = book.Title;
-            bookInCollection.ReleaseDate = book.ReleaseDate;
-            bookInCollection.Language = book.Language;
-            bookInCollection.Price = book.Price;
-            bookInCollection.Authors = book.Authors;
-        }
-        RaisePropertyChanged("Books");
-        RaisePropertyChanged("Authors");
-    }
-    private void BookManager_BookDeleted(object? sender, long isbn)
-    {
-        var bookToDelete = Books.FirstOrDefault(b => b.ISBN13 == isbn);
-        if (bookToDelete != null)
-        {
-            Books.Remove(bookToDelete);
-            RaisePropertyChanged("Books");
-        }
-    }
-
-    private void InventoryManager_InventoryAdded(object? sender, Inventory inventory)
-    {
-        Inventories.Add(inventory);
-        RaisePropertyChanged("Inventories");
-    }
-    private void InventoryManager_InventoryEdited(object? sender, Inventory inventory)
-    {
-        var inventoryInCollection = Inventories.FirstOrDefault(i => i.InventoryISBN13 == inventory.InventoryISBN13 && i.StoreID == inventory.StoreID);
-        if (inventoryInCollection != null)
-        {
-            inventoryInCollection.Amount = inventory.Amount;
-        }
-        if (inventoryInCollection == null)
+        else if (entity is Inventory inventory)
         {
             Inventories.Add(inventory);
+            RaisePropertyChanged(nameof(Inventories));
         }
-        RaisePropertyChanged("Inventories");
-
     }
-    private void InventoryManager_InventoryDeleted(object? sender, Inventory inventory)
+    private void OnEntityEdited(object? sender, object entity)
     {
-        var inventoryToDelete = Inventories.FirstOrDefault(i => i.InventoryISBN13 == inventory.InventoryISBN13 && i.StoreID == inventory.StoreID);
-        if (inventoryToDelete != null)
+        if (entity is Author author)
         {
-            Inventories.Remove(inventoryToDelete);
-            RaisePropertyChanged("Inventories");
+            var authorInCollection = Authors.FirstOrDefault(a => a.AuthorID == author.AuthorID);
+            if (authorInCollection != null)
+            {
+                authorInCollection.Firstname = author.Firstname;
+                authorInCollection.Lastname = author.Lastname;
+                authorInCollection.Birthdate = author.Birthdate;
+            }
+            RaisePropertyChanged(nameof(Author));
+            RaisePropertyChanged(nameof(Authors));
+
+        }
+        else if (entity is Book book)
+        {
+            var bookInCollection = Books.FirstOrDefault(b => b.ISBN13 == book.ISBN13);
+            if (bookInCollection != null)
+            {
+                bookInCollection.ISBN13 = book.ISBN13;
+                bookInCollection.Title = book.Title;
+                bookInCollection.ReleaseDate = book.ReleaseDate;
+                bookInCollection.Language = book.Language;
+                bookInCollection.Price = book.Price;
+                bookInCollection.Authors = book.Authors;
+            }
+            RaisePropertyChanged(nameof(Books));
+            RaisePropertyChanged(nameof(Authors));
+        }
+        else if (entity is Inventory inventory)
+        {
+            var inventoryInCollection = Inventories.FirstOrDefault(i => i.InventoryISBN13 == inventory.InventoryISBN13 && i.StoreID == inventory.StoreID);
+            if (inventoryInCollection != null)
+            {
+                inventoryInCollection.Amount = inventory.Amount;
+            }
+            if (inventoryInCollection == null)
+            {
+                Inventories.Add(inventory);
+            }
+            RaisePropertyChanged(nameof(Inventories));
         }
     }
-
-
-
+    private void OnEntityDeleted(object? sender, object entity)
+    {
+        if (entity is Author author)
+        {
+            var authorToDelete = Authors.FirstOrDefault(a => a.AuthorID == author.AuthorID);
+            if (authorToDelete != null)
+            {
+                Authors.Remove(authorToDelete);
+            }
+            RaisePropertyChanged(nameof(Authors));
+        }
+        else if (entity is Book book)
+        {
+            var bookToDelete = Books.FirstOrDefault(b => b.ISBN13 == book.ISBN13);
+            if (bookToDelete != null)
+            {
+                Books.Remove(bookToDelete);
+                RaisePropertyChanged(nameof(Books));
+            }
+        }
+        else if (entity is Inventory inventory)
+        {
+            var inventoryToDelete = Inventories.FirstOrDefault(i => i.InventoryISBN13 == inventory.InventoryISBN13 && i.StoreID == inventory.StoreID);
+            if (inventoryToDelete != null)
+            {
+                Inventories.Remove(inventoryToDelete);
+                RaisePropertyChanged(nameof(Inventories));
+            }
+        }
+    }
+    private void OnEntityFetch(object? sender, object entity)
+    {
+        RaisePropertyChanged(nameof(Inventories));
+        RaisePropertyChanged(nameof(Authors));
+        RaisePropertyChanged(nameof(Books));
+        RaisePropertyChanged(nameof(Stores));
+    }
 
     private void OnCancelButtonPress(object obj)
     {
         Close?.Invoke();
     }
+    #endregion
 }
 interface ICloseWindows
 {

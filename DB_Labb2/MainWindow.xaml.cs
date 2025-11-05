@@ -1,23 +1,27 @@
 ﻿
-using DB_Labb2.Dialogs;
-using DB_Labb2.Model;
-using DB_Labb2.viewModel;
+using Bookstore.Dialogs;
+using Shared.Model;
+using Bookstore.viewModel;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using Bookstore.Service;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace DB_Labb2;
+namespace Bookstore;
 
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
-    public MainWindow()
+    public MainWindow(MainViewModel viewModel)
     {
         InitializeComponent();
-        Loaded += MainWindow_Loaded;
-        var viewModel = new MainViewModel();
+
         DataContext = viewModel;
+
+        Loaded += async (s, e) => await viewModel.LoadDataAsync();
     }
+
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         LoadCloseWindows();

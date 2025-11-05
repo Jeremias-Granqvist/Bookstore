@@ -1,4 +1,4 @@
-﻿using DB_Labb2.viewModel;
+﻿using Bookstore.viewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace DB_Labb2.Dialogs;
+namespace Bookstore.Dialogs;
 public partial class EditAuthorDialog : Window
 {
     public EditAuthorDialog(EditAuthorDialogViewModel editAuthorModel)

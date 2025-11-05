@@ -1,9 +1,9 @@
-﻿using DB_Labb2.Model;
+﻿using Shared.Model;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace DB_Labb2.Converters;
+namespace Bookstore.Converters;
 
 public class AuthorNameConverter : IValueConverter
 {

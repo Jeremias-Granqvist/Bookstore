@@ -1,18 +1,19 @@
-﻿using DB_Labb2.Command;
-using DB_Labb2.Model;
+﻿using Shared.Command;
+using Shared.Model;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
+using Bookstore.Service.Interfaces;
 
-namespace DB_Labb2.viewModel
+namespace Bookstore.viewModel
 {
     public class EditAuthorDialogViewModel : ModelBase, ICloseWindows
     {
-        private AuthorManager _authorManager;
-        public EditAuthorDialogViewModel(AuthorManager authorManager, MainViewModel mainViewModel)
+        private IAuthorService _authorService;
+        public EditAuthorDialogViewModel(IAuthorService authorService, MainViewModel mainViewModel)
         {
             Authors = mainViewModel.Authors;
-            _authorManager = authorManager;
+            _authorService = authorService;
             EditAuthorCommand = new DelegateCommand(OnEditAuthor);
             CancelButtonCommand = new DelegateCommand(OnCancelClick);
         }
@@ -178,12 +179,12 @@ namespace DB_Labb2.viewModel
         {
             switch (month)
             {
-                case Model.Months.February:
+                case Months.February:
                     return DateTime.IsLeapYear(year) ? 29 : 28;
-                case Model.Months.April:
-                case Model.Months.June:
-                case Model.Months.September:
-                case Model.Months.November:
+                case Months.April:
+                case Months.June:
+                case Months.September:
+                case Months.November:
                     return 30;
                 default:
                     return 31;
@@ -237,13 +238,13 @@ namespace DB_Labb2.viewModel
         private void UpdateAuthorInformation(Author author)
         {
             SelectedAuthor.Birthdate = DateOnly.Parse(SelectedYear.ToString() + "-" + SelectedMonth.ToString() + "-" + SelectedDay.ToString());
-            _authorManager.EditAuthor(SelectedAuthor);
+            _authorService.EditAuthorAsync(SelectedAuthor);
         }
 
         private void DeleteAuthorFromDB(Author author)
         {
             var authorToRemove = Authors.FirstOrDefault(a => a.AuthorID == author.AuthorID);
-            _authorManager.DeleteAuthor(authorToRemove.AuthorID);
+            _authorService.DeleteAuthorAsync(authorToRemove);
         }
 
         private void OnCancelClick(object obj)
