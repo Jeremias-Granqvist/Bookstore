@@ -459,7 +459,7 @@
                      Header="Authors">
                 <DataGrid x:Name="AuthorDataGrid"
                           AutoGenerateColumns="false"
-                          ItemsSource="{Binding FilteredAuthors}"
+                          ItemsSource="{Binding FilteredAuthors}" 
                           Margin="5,5"
                           IsReadOnly="True">
                     <DataGrid.Columns>
