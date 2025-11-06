@@ -101,12 +101,12 @@ public partial class BookstoreContext : DbContext
         modelBuilder.Entity<Inventory>()
                     .HasKey(i => new { i.InventoryISBN13, i.StoreID });
         modelBuilder.Entity<Inventory>()
-                    .HasOne(i => i.book)
+                    .HasOne(i => i.InvBook)
                     .WithMany(b => b.inventories)
                     .HasForeignKey(i => i.InventoryISBN13);
 
         modelBuilder.Entity<Inventory>()
-                    .HasOne(i => i.book)
+                    .HasOne(i => i.InvBook)
                     .WithMany(b => b.inventories)
                     .HasForeignKey(i => i.InventoryISBN13);
 

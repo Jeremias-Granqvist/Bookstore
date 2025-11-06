@@ -11,10 +11,18 @@ builder.Services.AddDbContext<BookstoreContext>(options =>
     .LogTo(Console.WriteLine, LogLevel.Information));
 
 builder.Services.AddScoped<IAuthorManager, AuthorManager>();
+builder.Services.AddScoped<IBookManager, BookManager>();
+builder.Services.AddScoped<IStoreManager, StoreManager>();
+builder.Services.AddScoped<IInventoryManager, InventoryManager>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();

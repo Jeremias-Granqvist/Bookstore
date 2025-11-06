@@ -1,5 +1,6 @@
 ﻿using Bookstore.Service.Interfaces;
 using Shared.Model;
+using Shared.Statics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,12 +18,14 @@ namespace Bookstore.Service
         public BookService(IHttpClientFactory httpClient, IEventDispatcher eventDispatcher)
         {
             _httpClient = httpClient.CreateClient("api");
+            _httpClient.BaseAddress = new Uri(StaticConstants.API_BASE_ADRESS);
             _eventDispatcher = eventDispatcher;
         }
         public async Task<List<Book>> GetBooksAsync()
         {
             var response = await _httpClient.GetFromJsonAsync<List<Book>>("api/Book/GetBooks");
             if (response is null) return new List<Book>();
+            _eventDispatcher.EntityList(response);
             return response;
         }
         public async Task<Book> AddBookAsync(Book book)

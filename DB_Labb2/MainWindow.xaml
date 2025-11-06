@@ -459,8 +459,8 @@
                      Header="Authors">
                 <DataGrid x:Name="AuthorDataGrid"
                           AutoGenerateColumns="false"
-                          ItemsSource="{Binding FilteredAuthors}" 
-                          Margin="5,5"
+                          ItemsSource="{Binding FilteredAuthors}"
+                          Margin="3,0,7,0"
                           IsReadOnly="True">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="AuthorID"
@@ -478,7 +478,7 @@
             <TabItem x:Name="BooksTabControl"
                      Header="Books">
                 <DataGrid x:Name="BooksDataGrid"
-                          ItemsSource="{Binding FilteredBooks}"
+                          ItemsSource="{Binding FilteredBooks, UpdateSourceTrigger=PropertyChanged}"
                           AutoGenerateColumns="False"
                           Margin="5,5"
                           IsReadOnly="True">
@@ -516,7 +516,7 @@
                         <DataGridTextColumn Header="Amount"
                                             Binding="{Binding Amount, UpdateSourceTrigger=PropertyChanged}" />
                         <DataGridTextColumn Header="Title"
-                                            Binding="{Binding book.Title, UpdateSourceTrigger=PropertyChanged}" />
+                                            Binding="{Binding InvBook.Title, UpdateSourceTrigger=PropertyChanged}" />
                     </DataGrid.Columns>
 
                 </DataGrid>

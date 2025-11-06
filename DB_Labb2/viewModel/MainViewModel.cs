@@ -66,6 +66,7 @@ public class MainViewModel : ModelBase, ICloseWindows
     }
 
     //startup settings and commands
+    #region startup settings and commands
     public ICommand PressResetCommand { get; set; }
     public ICommand PressBookSearchCommand { get; set; }
     public ICommand PressAuthorSearchCommand { get; set; }
@@ -77,12 +78,15 @@ public class MainViewModel : ModelBase, ICloseWindows
     public ICommand AddBookCommand { get; set; }
     public ICommand EditBookCommand { get; set; }
     public Action Close { get; set; }
+    #endregion
 
     private ObservableCollection<Inventory> _inventories;
     public ObservableCollection<Inventory> Inventories
     {
         get { return _inventories; }
-        set { _inventories = value; }
+        set { _inventories = value;
+            RaisePropertyChanged();
+            }
     }
 
     private ObservableCollection<Author> _authors;
@@ -104,6 +108,7 @@ public class MainViewModel : ModelBase, ICloseWindows
         set
         {
             _books = value;
+            FilteredBooks = _books;
             RaisePropertyChanged();
         }
     }
@@ -128,19 +133,13 @@ public class MainViewModel : ModelBase, ICloseWindows
     {
         var authors = await _authorService.GetAuthorsAsync();
         Authors = new ObservableCollection<Author>(authors);
-        //FilteredAuthors = Authors;
         var books = await _bookService.GetBooksAsync();
         Books = new ObservableCollection<Book>(books);
-        //FilteredBooks = Books;
+        var stores = await _storeService.GetStoresAsync();
+        Stores = new ObservableCollection<Store>(stores);    
         var inventories = await _inventoryService.GetInventoriesAsync();
         Inventories = new ObservableCollection<Inventory>(inventories);
 
-        var stores = await _storeService.GetStoresAsync();
-        Stores = new ObservableCollection<Store>(stores);
-
-        FilteredAuthors = Authors;
-        FilteredBooks = Books;
-    
     }
     //Search handling
 
@@ -271,7 +270,7 @@ public class MainViewModel : ModelBase, ICloseWindows
                 Amount = AddToAmount, 
                 StoreID = SelectedStore.StoreID, 
                 store = SelectedStore, 
-                book = SelectedBook, 
+                InvBook = SelectedBook, 
                 InventoryISBN13 = SelectedBook.ISBN13 
             };
             RaisePropertyChanged("Inventories");
@@ -476,6 +475,10 @@ public class MainViewModel : ModelBase, ICloseWindows
         RaisePropertyChanged(nameof(Authors));
         RaisePropertyChanged(nameof(Books));
         RaisePropertyChanged(nameof(Stores));
+        RaisePropertyChanged(nameof(FilteredAuthors));
+        RaisePropertyChanged(nameof(FilteredBooks));
+
+
     }
 
     private void OnCancelButtonPress(object obj)

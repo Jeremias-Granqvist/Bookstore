@@ -11,7 +11,6 @@ namespace Shared.Model
     {
 		private long _inventoyISBN13;
         [Column("ISBN13")]
-
         public long InventoryISBN13
 		{
 			get { return _inventoyISBN13; }
@@ -44,7 +43,18 @@ namespace Shared.Model
 			}
 		}
 
-		public Book book { get; set; }
+		private Book _book;
+
+
+		public Book InvBook 
+		{
+			get { return _book; }
+			set { 
+				_book = value;
+				RaisePropertyChanged();	
+				}
+		}
+
 		public Store store { get; set; }
 
 	}

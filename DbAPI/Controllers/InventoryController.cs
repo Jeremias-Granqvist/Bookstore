@@ -13,10 +13,10 @@ namespace DbAPI.Controllers
     {
         _repository = inventoryManager;
     }
-    [HttpGet(Name = "GetInventories")]
-    public Task<List<Inventory>> GetInventories()
+    [HttpGet("GetInventories")]
+    public async Task<List<Inventory>> GetInventories()
     {
-        return _repository.GetInventoriesAsync();
+        return await _repository.GetInventoriesAsync();
 
     }
     [HttpPost(Name = "CreateInventory")]

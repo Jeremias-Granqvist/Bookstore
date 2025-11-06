@@ -16,7 +16,7 @@ namespace Data.Managers
         public async Task<List<Inventory>> GetInventoriesAsync()
         {
             return await DBcontext.Inventory
-            .Include(i => i.book)
+            .Include(i => i.InvBook)
             .Include(i => i.store)
             .Where(i => i.Amount > 0)
             .ToListAsync();

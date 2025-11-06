@@ -13,12 +13,12 @@ namespace DbAPI.Controllers
         {
             _repository = bookManager;
         }
-        [HttpGet(Name = "GetBooks")]
-        public Task<List<Book>> GetBooks()
+        [HttpGet("GetBooks")]
+        public async Task<List<Book>> GetBooks()
         {
-            return _repository.GetBooksAsync();
-
+            return await _repository.GetBooksAsync();
         }
+
         [HttpPost(Name = "CreateBook")]
         public async Task<ActionResult> CreateBookAsync(Book book)
         {

@@ -15,10 +15,10 @@ namespace DbAPI.Controllers
             _repository = storeManager;
         }
 
-        [HttpGet(Name = "GetStores")]
-        public Task<List<Store>> GetStoresAsync()
+        [HttpGet("GetStores")]
+        public async Task<List<Store>> GetStoresAsync()
         {
-            return _repository.GetStoresAsync();
+            return await _repository.GetStoresAsync();
 
         }
     }
