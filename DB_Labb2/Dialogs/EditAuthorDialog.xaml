@@ -123,7 +123,7 @@
                   FontSize="14"
                   FontWeight="Bold"
                   Content="Delete Author?"
-                  IsChecked="{Binding IsSelected}"/>        
+                  IsChecked="{Binding IsDeleteSelected}"/>        
 
         <Button x:Name="SaveBTN"
                 HorizontalAlignment="Center"

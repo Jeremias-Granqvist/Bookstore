@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using Bookstore.Service.Interfaces;
+using Shared.Statics;
 
 namespace Bookstore.viewModel
 {
@@ -125,7 +126,7 @@ namespace Bookstore.viewModel
             set
             {
                 _month = value;
-                UpdateDaysInMonth();
+                DayComboBoxItemsSource = StaticMethods.UpdateDaysInMonth(_selectedYear, _month);
                 RaisePropertyChanged();
             }
         }
@@ -155,7 +156,7 @@ namespace Bookstore.viewModel
         }
 
         private bool _isSelected;
-        public bool IsSelected
+        public bool IsDeleteSelected
         {
             get { return _isSelected; }
             set
@@ -165,70 +166,31 @@ namespace Bookstore.viewModel
             }
         }
 
-        private void UpdateDaysInMonth()
-        {
-            if (Month is Months selectedMonth)
-            {
-                int daysInMonth = GetDaysInMonth(selectedMonth, SelectedYear);
-                var localList = Enumerable.Range(1, daysInMonth).ToList();
-                DayComboBoxItemsSource = new ObservableCollection<int>(localList);
-            }
-        }
-
-        private int GetDaysInMonth(Months month, int year)
-        {
-            switch (month)
-            {
-                case Months.February:
-                    return DateTime.IsLeapYear(year) ? 29 : 28;
-                case Months.April:
-                case Months.June:
-                case Months.September:
-                case Months.November:
-                    return 30;
-                default:
-                    return 31;
-            }
-        }
         private void OnEditAuthor(object obj)
         {
-            if (IsSelected)
+            if (IsDeleteSelected)
             {
-                string messageBoxText = $"This will permanently remove {SelectedAuthor.FullName} from the database, do you wish to continue?";
-                string caption = "Warning";
-                MessageBoxButton button = MessageBoxButton.YesNo;
-                MessageBoxImage icon = MessageBoxImage.Warning;
-                var result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
-
-                switch (result)
-                {
-                    case MessageBoxResult.Yes:
-                        DeleteAuthorFromDB(SelectedAuthor);
-                        break;
-                    case MessageBoxResult.No:
-                        IsSelected = !IsSelected;
-                        break;
-                    default:
-                        break;
-                }
+                string messageBoxText = string.Format(StaticConstants.DELETE_WARNING, SelectedAuthor.FullName);
+                    if (StaticMethods.ShowYesNoWarning(messageBoxText)) DeleteAuthorFromDB(SelectedAuthor);
+                else IsDeleteSelected = !IsDeleteSelected;
             }
-            if (!IsSelected)
+            if (!IsDeleteSelected)
             {
                 if (SelectedAuthor == null)
                 {
-                    MessageBox.Show("Please choose an author to edit.");
+                    MessageBox.Show(StaticConstants.PICK_AUTH_EDIT);
                     return;
                 }
                 if (SelectedAuthor.Firstname == string.Empty || SelectedAuthor.Lastname == string.Empty || new[] { SelectedYear, (int)SelectedMonth, SelectedDay }.Any(val => val == 0))
                 {
-                    MessageBox.Show("Please fill out all fields.");
+                    MessageBox.Show(StaticConstants.FILL_ALL_FIELDS);
                     return;
                 }
                 else
                 {
                 UpdateAuthorInformation(SelectedAuthor);
 
-            Close?.Invoke();
+                Close?.Invoke();
                 }
             }
 
@@ -237,7 +199,7 @@ namespace Bookstore.viewModel
 
         private void UpdateAuthorInformation(Author author)
         {
-            SelectedAuthor.Birthdate = DateOnly.Parse(SelectedYear.ToString() + "-" + SelectedMonth.ToString() + "-" + SelectedDay.ToString());
+            SelectedAuthor.Birthdate = StaticMethods.DateCreeator(SelectedYear, Month, SelectedDay);
             _authorService.EditAuthorAsync(SelectedAuthor);
         }
 

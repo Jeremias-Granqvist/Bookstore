@@ -103,12 +103,12 @@ public class AddAuthorDialogViewModel : ModelBase, ICloseWindows
 
     private void OnAddAuthor(object obj)
     {
-        if (string.IsNullOrEmpty(Firstname) || string.IsNullOrEmpty(Lastname) || new [] { Year, (int)Month, Day }.Any(val => val == 0))
+        if (string.IsNullOrWhiteSpace(Firstname) || string.IsNullOrWhiteSpace(Lastname) || new [] { Year, (int)Month, Day }.Any(val => val <= 0))
         {
             MessageBox.Show("Please fill out all fields.");
             return;
         }
-        var selectedDate = DateOnly.Parse(Year.ToString() + "-" + Month.ToString() + "-" + Day.ToString());
+        var selectedDate = StaticMethods.DateCreeator(Year, Month, Day);
         
         Author newAuthor = new Author
         {

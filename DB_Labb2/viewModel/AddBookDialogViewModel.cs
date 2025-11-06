@@ -144,48 +144,20 @@ namespace Bookstore.viewModel
             }
         }
 
-
-        private void UpdateDaysInMonth()
-        {
-            if (Month is Months selectedMonth)
-            {
-                int daysInMonth = GetDaysInMonth(selectedMonth, Year);
-                var localList = Enumerable.Range(1, daysInMonth).ToList();
-                DayComboBoxItemsSource = new ObservableCollection<int>(localList);
-            }
-        }
-
-        private int GetDaysInMonth(Months month, int year)
-        {
-            switch (month)
-            {
-                case Months.February:
-                    return DateTime.IsLeapYear(year) ? 29 : 28;
-                case Months.April:
-                case Months.June:
-                case Months.September:
-                case Months.November:
-                    return 30;
-                default:
-                    return 31;
-            }
-        }
-
-
         private void OnSaveBook(object obj)
         {
-            if (string.IsNullOrEmpty(Title)|| string.IsNullOrEmpty(Language.ToString()) || Price == 0 || new[] { Year, (int)Month, Day }.Any(val => val == 0))
+            if (string.IsNullOrWhiteSpace(Title)|| !Enum.IsDefined(typeof(Language), Language) || Price <= 0 || new[] { Year, (int)Month, Day }.Any(val => val <= 0))
             {
                 MessageBox.Show("Please fill out all fields.");
                 return;
             }
-            if (ISBN13.ToString().Length != 13)
+            if (!StaticMethods.IsValidISBN13(ISBN13))
             {
                 MessageBox.Show("Please ensure your ISBN is 13 characters long.");
                 return;
             }
 
-            var selectedDate = DateOnly.Parse(Year.ToString() + "-" + Month.ToString() + "-" + Day.ToString());
+            var selectedDate = StaticMethods.DateCreeator(Year, Month, Day);
 
             var newBook = new Book()
             {

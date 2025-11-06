@@ -11,7 +11,11 @@ using System.Windows.Input;
 using System.Xml;
 
 namespace Bookstore.viewModel;
-
+//TODO Clean up classes, fix view logic, helper methods? 
+//TODO Implement views instead of datatrigger visibility on UI
+//TODO Rebuild entire UI
+//TODO Implement DTOs
+//
 public class MainViewModel : ModelBase, ICloseWindows
 {
     private IEventDispatcher _eventDispatcher;
@@ -42,6 +46,17 @@ public class MainViewModel : ModelBase, ICloseWindows
         SetDataGrids();
     }
 
+
+
+    //startup settings and commands
+    #region startup settings and commands
+
+    public async Task LoadDataAsync()
+    {
+        AttachEvents();
+        SetCommands();
+        SetDataGrids();
+    }
     private void SetCommands()
     {
         PressCancelButtonCommand = new DelegateCommand(OnCancelButtonPress);
@@ -55,7 +70,6 @@ public class MainViewModel : ModelBase, ICloseWindows
         PressAuthorSearchCommand = new DelegateCommand(OnAuthorSearchClick);
         PressResetCommand = new DelegateCommand(OnResetFilterClick);
     }
-
     private void AttachEvents()
     {
         _eventDispatcher.EntityAddedEvent += OnEntityAdded;
@@ -64,22 +78,22 @@ public class MainViewModel : ModelBase, ICloseWindows
         _eventDispatcher.EntityListEvent += OnEntityFetch;
 
     }
+    private async Task SetDataGrids()
+    {
+        var authors = await _authorService.GetAuthorsAsync();
+        Authors = new ObservableCollection<Author>(authors);
+        var books = await _bookService.GetBooksAsync();
+        Books = new ObservableCollection<Book>(books);
+        var stores = await _storeService.GetStoresAsync();
+        Stores = new ObservableCollection<Store>(stores);
+        var inventories = await _inventoryService.GetInventoriesAsync();
+        Inventories = new ObservableCollection<Inventory>(inventories);
 
-    //startup settings and commands
-    #region startup settings and commands
-    public ICommand PressResetCommand { get; set; }
-    public ICommand PressBookSearchCommand { get; set; }
-    public ICommand PressAuthorSearchCommand { get; set; }
-    public ICommand PressAddToInventoryCommand { get; set; }
-    public ICommand PressRemoveFromInventoryCommand { get; set; }
-    public ICommand PressCancelButtonCommand { get; set; }
-    public ICommand AddAuthorCommand { get; set; }
-    public ICommand AlterAuthorCommand { get; set; }
-    public ICommand AddBookCommand { get; set; }
-    public ICommand EditBookCommand { get; set; }
-    public Action Close { get; set; }
+    }
     #endregion
 
+    //Lists
+    #region LISTS
     private ObservableCollection<Inventory> _inventories;
     public ObservableCollection<Inventory> Inventories
     {
@@ -123,28 +137,11 @@ public class MainViewModel : ModelBase, ICloseWindows
             RaisePropertyChanged();
         }
     }
-    public async Task LoadDataAsync()
-    {
-        AttachEvents();
-        SetCommands();
-        SetDataGrids();
-    }
-    private async Task SetDataGrids()
-    {
-        var authors = await _authorService.GetAuthorsAsync();
-        Authors = new ObservableCollection<Author>(authors);
-        var books = await _bookService.GetBooksAsync();
-        Books = new ObservableCollection<Book>(books);
-        var stores = await _storeService.GetStoresAsync();
-        Stores = new ObservableCollection<Store>(stores);    
-        var inventories = await _inventoryService.GetInventoriesAsync();
-        Inventories = new ObservableCollection<Inventory>(inventories);
+    #endregion
 
-    }
     //Search handling
-
+    #region Search handling
     private string _authorSearchString;
-
     public string AuthorSearchString
     {
         get { return _authorSearchString; }
@@ -154,7 +151,6 @@ public class MainViewModel : ModelBase, ICloseWindows
             RaisePropertyChanged();
         }
     }
-
 
     private ObservableCollection<Author> _filteredAuthors;
     public ObservableCollection<Author> FilteredAuthors
@@ -209,8 +205,10 @@ public class MainViewModel : ModelBase, ICloseWindows
     {
         SetDataGrids();
     }
-    //Inventory updating
+    #endregion
 
+    //Inventory updating
+    #region Inventory Updates
     private Store _selectedStore;
 
     public Store SelectedStore
@@ -312,7 +310,7 @@ public class MainViewModel : ModelBase, ICloseWindows
             var result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.OK);
         }
     }
-
+    #endregion
 
     //DIALOGBOX OPENING
     #region Dialogbox Openers
@@ -374,6 +372,7 @@ public class MainViewModel : ModelBase, ICloseWindows
         editBookWindow.Show();
     }
     #endregion
+
     //EVENT HANDLING
     #region Event Handling
     private void OnEntityAdded(object? sender, object entity)
@@ -486,6 +485,21 @@ public class MainViewModel : ModelBase, ICloseWindows
         Close?.Invoke();
     }
     #endregion
+
+    //COMMANDS
+    #region COMMANDS
+    public ICommand PressResetCommand { get; set; }
+    public ICommand PressBookSearchCommand { get; set; }
+    public ICommand PressAuthorSearchCommand { get; set; }
+    public ICommand PressAddToInventoryCommand { get; set; }
+    public ICommand PressRemoveFromInventoryCommand { get; set; }
+    public ICommand PressCancelButtonCommand { get; set; }
+    public ICommand AddAuthorCommand { get; set; }
+    public ICommand AlterAuthorCommand { get; set; }
+    public ICommand AddBookCommand { get; set; }
+    public ICommand EditBookCommand { get; set; }
+    public Action Close { get; set; }
+#endregion
 }
 interface ICloseWindows
 {

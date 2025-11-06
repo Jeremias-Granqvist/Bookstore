@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Input;
 
 using Bookstore.Service.Interfaces;
+using Shared.Statics;
 
 namespace Bookstore.viewModel
 {
@@ -31,17 +32,13 @@ namespace Bookstore.viewModel
 
         public Book LoadBookForEditing(Book book)
         {
-
-                _bookService.EditBookAsync(book);
-
-                    SelectedAuthor.Clear();
-                    foreach (var author in book.Authors)
-                    {
-                        SelectedAuthor.Add(author);
-                    }
-
-                return book;
-            
+            _bookService.EditBookAsync(book);
+            SelectedAuthor.Clear();
+            foreach (var author in book.Authors)
+            {
+                SelectedAuthor.Add(author);
+            }
+            return book;
         }
         private ObservableCollection<Book> _books;
         public ObservableCollection<Book> Books
@@ -244,7 +241,7 @@ namespace Bookstore.viewModel
             set
             {
                 _month = value;
-                UpdateDaysInMonth();
+                DayComboBoxItemsSource = StaticMethods.UpdateDaysInMonth(_selectedYear, _month);
                 RaisePropertyChanged();
             }
         }
@@ -281,76 +278,32 @@ namespace Bookstore.viewModel
             }
         }
 
-        private void UpdateDaysInMonth()
-        {
-            if (Month is Months selectedMonth)
-            {
-                int daysInMonth = GetDaysInMonth(selectedMonth, SelectedYear);
-                var localList = Enumerable.Range(1, daysInMonth).ToList();
-                DayComboBoxItemsSource = new ObservableCollection<int>(localList);
-            }
-        }
-
-        private int GetDaysInMonth(Months month, int year)
-        {
-            switch (month)
-            {
-                case Months.February:
-                    return DateTime.IsLeapYear(year) ? 29 : 28;
-                case Months.April:
-                case Months.June:
-                case Months.September:
-                case Months.November:
-                    return 30;
-                default:
-                    return 31;
-            }
-        }
-
-
-
         private void OnSaveClick(object obj)
         {
             if (IsSelected)
             {
-                string messageBoxText = $"This will permanently remove {SelectedBook.Title} from the database, do you wish to continue?";
-                string caption = "Warning";
-                MessageBoxButton button = MessageBoxButton.YesNo;
-                MessageBoxImage icon = MessageBoxImage.Warning;
-                var result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
-
-                switch (result)
+                string messageBoxText = string.Format(StaticConstants.DELETE_WARNING, SelectedBook.Title);
+                if (StaticMethods.ShowYesNoWarning(messageBoxText))
                 {
-                    case MessageBoxResult.Yes:
-                        DeleteBookFromDB(SelectedBook);
-                        break;
-                    case MessageBoxResult.No:
-                        IsSelected = !IsSelected;
-                        break;
-                    default:
-                        break;
+                    DeleteBookFromDB(SelectedBook);
                 }
             }
             if (!IsSelected)
             {
                 if (SelectedBook == null)
                 {
-                    MessageBox.Show("Please pick a book to edit");
+                    MessageBox.Show(StaticConstants.PICK_BOOK_EDIT);
                     return;
                 }
-                if (SelectedBook.ISBN13.ToString().Length != 13)
+                if (StaticMethods.IsValidISBN13(SelectedBook.ISBN13))
                 {
-                    MessageBox.Show("Please ensure your ISBN number is 13 characters long");
+                    MessageBox.Show(StaticConstants.INVALID_ISBN);
                     return;
 
                 }
                 else if (SelectedBook.Title == string.Empty || SelectedBook.Language == string.Empty || SelectedBook.Price == 0)
-                    {
-                    string messageBoxText = $"Please fill out all fields.";
-                    string caption = "Error";
-                    MessageBoxButton button = MessageBoxButton.OK;
-                    MessageBoxImage icon = MessageBoxImage.Error;
-                    var result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.OK);
+                {
+                    StaticMethods.ShowError();
                 }
                 else
                 {
@@ -362,7 +315,7 @@ namespace Bookstore.viewModel
 
         private void UpdateBookInformation(Book book)
         {
-            SelectedBook.ReleaseDate = DateOnly.Parse(SelectedYear.ToString() + "-" + SelectedMonth.ToString() + "-" + SelectedDay.ToString());
+            SelectedBook.ReleaseDate = StaticMethods.DateCreeator(_selectedYear, Month, _selectedDay);             
             SelectedBook.Authors = SelectedAuthor;
             _bookService.EditBookAsync(SelectedBook);
         }
