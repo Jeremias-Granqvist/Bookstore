@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Data.Interfaces
 {
-    public interface IAuthorManager
+    public interface IAuthorRepository
     {
         Task<bool> AddAuthorAsync(Author author);
         Task<bool> DeleteAuthorAync(int authorID);

@@ -2,7 +2,7 @@
 
 namespace Data.Interfaces
 {
-    public interface IInventoryManager
+    public interface IInventoryRepository
     {
         Task<bool> AddInventoryAsync(Inventory inventory);
         Task<bool> DeleteInventoryAsync(int StoreId, long ISBN);

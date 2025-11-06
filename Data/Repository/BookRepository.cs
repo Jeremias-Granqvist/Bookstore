@@ -9,13 +9,13 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Statics;
 using Data.Interfaces;
 
-namespace Data.Managers
+namespace Data.Repository
 {
-    public class BookManager : ModelBase, IBookManager
+    public class BookRepository : ModelBase, IBookRepository
     {
         private readonly BookstoreContext DBcontext;
 
-        public BookManager(BookstoreContext context)
+        public BookRepository(BookstoreContext context)
         {
             DBcontext = context;
         }

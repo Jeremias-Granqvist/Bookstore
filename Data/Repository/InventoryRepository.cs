@@ -4,12 +4,12 @@ using Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Shared.Statics;
 
-namespace Data.Managers
+namespace Data.Repository
 {
-    public class InventoryManager : ModelBase, IInventoryManager
+    public class InventoryRepository : ModelBase, IInventoryRepository
     {
         private readonly BookstoreContext DBcontext;
-        public InventoryManager(BookstoreContext context)
+        public InventoryRepository(BookstoreContext context)
         {
             DBcontext = context;
         }

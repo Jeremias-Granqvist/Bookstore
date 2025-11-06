@@ -2,7 +2,7 @@
 
 namespace Data.Interfaces
 {
-    public interface IBookManager
+    public interface IBookRepository
     {
         Task<bool> AddBookAsync(Book book);
         Task<bool> DeleteBookAsync(long ISBN);

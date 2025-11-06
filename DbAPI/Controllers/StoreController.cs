@@ -1,5 +1,4 @@
 ﻿using Data.Interfaces;
-using Data.Managers;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Model;
 
@@ -9,8 +8,8 @@ namespace DbAPI.Controllers
     [ApiController]
     public class StoreController : ControllerBase
     {
-        private readonly IStoreManager _repository;
-        public StoreController(IStoreManager storeManager)
+        private readonly IStoreRepository _repository;
+        public StoreController(IStoreRepository storeManager)
         {
             _repository = storeManager;
         }

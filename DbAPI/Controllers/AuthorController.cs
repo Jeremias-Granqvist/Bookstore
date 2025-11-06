@@ -10,8 +10,8 @@ namespace DbAPI.Controllers
     [ApiController]
     public class AuthorController : ControllerBase
     {
-        private readonly IAuthorManager _repository ;
-        public AuthorController(IAuthorManager authorManager)
+        private readonly IAuthorRepository _repository ;
+        public AuthorController(IAuthorRepository authorManager)
         {
             _repository = authorManager;
         }

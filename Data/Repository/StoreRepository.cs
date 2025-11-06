@@ -1,4 +1,5 @@
 ﻿using Data.Context;
+using Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Shared.Model;
 using System;
@@ -7,12 +8,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Data.Managers
+namespace Data.Repository
 {
-    public class StoreManager : IStoreManager
+    public class StoreRepository : IStoreRepository
     {
         private readonly BookstoreContext DBcontext;
-        public StoreManager(BookstoreContext context)
+        public StoreRepository(BookstoreContext context)
         {
             DBcontext = context;
         }

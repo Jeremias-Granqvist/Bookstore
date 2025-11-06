@@ -1,6 +1,6 @@
 using Data.Context;
 using Data.Interfaces;
-using Data.Managers;
+using Data.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,10 +10,10 @@ builder.Services.AddDbContext<BookstoreContext>(options =>
     .EnableSensitiveDataLogging()
     .LogTo(Console.WriteLine, LogLevel.Information));
 
-builder.Services.AddScoped<IAuthorManager, AuthorManager>();
-builder.Services.AddScoped<IBookManager, BookManager>();
-builder.Services.AddScoped<IStoreManager, StoreManager>();
-builder.Services.AddScoped<IInventoryManager, InventoryManager>();
+builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
+builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<IStoreRepository, StoreRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers()

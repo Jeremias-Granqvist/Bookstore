@@ -8,8 +8,8 @@ namespace DbAPI.Controllers
     [ApiController]
     public class BookController : ControllerBase
     {
-        private readonly IBookManager _repository;
-        public BookController(IBookManager bookManager)
+        private readonly IBookRepository _repository;
+        public BookController(IBookRepository bookManager)
         {
             _repository = bookManager;
         }

@@ -1,8 +1,8 @@
 ﻿using Shared.Model;
 
-namespace Data.Managers
+namespace Data.Interfaces
 {
-    public interface IStoreManager
+    public interface IStoreRepository
     {
         Task<List<Store>> GetStoresAsync();
     }

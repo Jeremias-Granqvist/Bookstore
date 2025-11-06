@@ -8,8 +8,8 @@ namespace DbAPI.Controllers
     [ApiController]
     public class InventoryController : ControllerBase
     {
-     private readonly IInventoryManager _repository;
-    public InventoryController(IInventoryManager inventoryManager)
+     private readonly IInventoryRepository _repository;
+    public InventoryController(IInventoryRepository inventoryManager)
     {
         _repository = inventoryManager;
     }

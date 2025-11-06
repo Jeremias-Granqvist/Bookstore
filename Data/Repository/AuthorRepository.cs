@@ -1,23 +1,15 @@
-﻿using Azure;
-using Data.Context;
+﻿using Data.Context;
 using Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Shared.Model;
 using Shared.Statics;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading.Tasks;
 
-namespace Data.Managers
+namespace Data.Repository
 {
-    public class AuthorManager : ModelBase, IAuthorManager
+    public class AuthorRepository : ModelBase, IAuthorRepository
     {
         private readonly BookstoreContext DBcontext;
-        public AuthorManager(BookstoreContext context)
+        public AuthorRepository(BookstoreContext context)
         {
             DBcontext = context;
         }

@@ -39,7 +39,6 @@ namespace Bookstore
 
             ServiceProvider = services.BuildServiceProvider();
 
-            // Resolve MainWindow via DI, which will inject MainViewModel automatically
             var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
             mainWindow.Show();
         }
